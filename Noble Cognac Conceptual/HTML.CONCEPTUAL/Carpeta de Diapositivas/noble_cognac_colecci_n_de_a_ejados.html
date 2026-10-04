@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Noble Cognac — Colección de Añejados</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C9A84C; --gold-light: #E8C97A; --gold-dark: #8B6914;
+    --black: #0A0A0A; --dark2: #1A1A1A;
+    --text: #E8E0D0; --text-muted: #9A8E7A;
+    --blue: #1B3A5C; --blue-light: #4A90C4; --blue-mid: #2E6DA4;
+    --red: #6B1A1A; --red-light: #C0392B; --red-mid: #922B21;
+  }
+  html, body { width:100%; height:100%; background:var(--black); color:var(--text); font-family:'Montserrat',sans-serif; overflow:hidden; }
+  .deck { width:100vw; height:100vh; position:relative; }
+  .slide { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0; pointer-events:none; transition:opacity 0.8s ease; overflow:hidden; }
+  .slide.active { opacity:1; pointer-events:all; }
+  .gold-line { width:80px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:14px auto; }
+
+  /* ─── SLIDE LAYOUT ─── */
+  .slide-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%; height: 100%;
+  }
+
+  /* ─── BOTTLE PANEL ─── */
+  .bottle-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bottle-panel::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0.07;
+  }
+  .bottle-panel.blue-panel {
+    background: radial-gradient(ellipse at center, #0d1e30 0%, #050a0f 100%);
+  }
+  .bottle-panel.blue-panel::before {
+    background: radial-gradient(circle at 50% 40%, #2E6DA4 0%, transparent 70%);
+    opacity: 0.15;
+  }
+  .bottle-panel.red-panel {
+    background: radial-gradient(ellipse at center, #200d0d 0%, #0a0505 100%);
+  }
+  .bottle-panel.red-panel::before {
+    background: radial-gradient(circle at 50% 40%, #922B21 0%, transparent 70%);
+    opacity: 0.2;
+  }
+
+  /* ─── REALISTIC BOTTLE WRAPPER ─── */
+  .bottle-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 25px 35px rgba(0,0,0,0.85));
+  }
+  .bottle-wrap svg { width: 230px; height: 500px; max-height: 82vh; }
+
+  /* ─── PANEL INFO ─── */
+  .info-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 50px 60px 50px 50px;
+  }
+  .info-panel.blue-bg { background: linear-gradient(135deg, #080e15 0%, #0a0a0a 100%); }
+  .info-panel.red-bg  { background: linear-gradient(135deg, #120505 0%, #0a0a0a 100%); }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border: 1px solid;
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+  .badge.blue { border-color: var(--blue-light); color: var(--blue-light); }
+  .badge.red  { border-color: var(--red-light);  color: var(--red-light); }
+
+  .age-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(5rem, 10vw, 8rem);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .age-number.blue { color: var(--blue-light); }
+  .age-number.red  { color: var(--red-light); }
+
+  .age-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 4px;
+    margin-bottom: 20px;
+  }
+
+  .product-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .product-name em { font-style: italic; }
+
+  .product-sub {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .divider {
+    width: 40px; height: 1px;
+    margin: 16px 0;
+  }
+  .divider.blue { background: var(--blue-light); }
+  .divider.red  { background: var(--red-light); }
+
+  .notes-title {
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .notes-list {
+    list-style: none;
+    margin-bottom: 24px;
+  }
+  .notes-list li {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .notes-list li::before {
+    content: '';
+    display: block;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .notes-list.blue li::before { background: var(--blue-light); }
+  .notes-list.red  li::before { background: var(--red-light); }
+
+  .price-tag {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--gold-light);
+  }
+  .price-tag small {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ─── NAV ─── */
+  .nav { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:16px; z-index:100; background:rgba(10,10,10,0.9); padding:10px 20px; border:1px solid rgba(201,168,76,0.2); backdrop-filter:blur(10px); }
+  .nav-btn { background:none; border:1px solid rgba(201,168,76,0.3); color:var(--gold); width:32px; height:32px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .nav-btn:hover { background:rgba(201,168,76,0.1); border-color:var(--gold); }
+  .nav-dots { display:flex; gap:8px; }
+  .dot { width:6px; height:6px; border-radius:50%; background:rgba(201,168,76,0.2); cursor:pointer; transition:all 0.3s; }
+  .dot.active { background:var(--gold); width:20px; border-radius:3px; }
+  .slide-counter { font-size:0.6rem; letter-spacing:0.2em; color:var(--text-muted); min-width:40px; text-align:center; }
+  .slide-badge { position:fixed; top:24px; right:32px; font-size:0.55rem; letter-spacing:0.3em; color:rgba(201,168,76,0.4); z-index:100; }
+
+  /* ─── ANIMATIONS ─── */
+  .slide.active .anim { animation: fadeUp 0.7s ease forwards; }
+  .slide.active .anim:nth-child(2) { animation-delay:0.15s; }
+  .slide.active .anim:nth-child(3) { animation-delay:0.3s; }
+  .slide.active .anim:nth-child(4) { animation-delay:0.45s; }
+  .slide.active .anim:nth-child(5) { animation-delay:0.6s; }
+  .slide.active .anim:nth-child(6) { animation-delay:0.75s; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+  .anim { opacity:0; }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- SLIDE 1 — RESERVA AZUL · 24 AÑOS -->
+  <div class="slide active" id="s1">
+    <div class="slide-inner">
+
+      <div class="bottle-panel blue-panel">
+        <div class="bottle-wrap">
+          <svg viewBox="0 0 240 520" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="liquidBlue" cx="50%" cy="65%" r="60%">
+                <stop offset="0%" stop-color="#E8922A"/>
+                <stop offset="35%" stop-color="#BA5D0D"/>
+                <stop offset="70%" stop-color="#6B2902"/>
+                <stop offset="100%" stop-color="#2D0D00"/>
+              </radialGradient>
+              
+              <linearGradient id="glassBodyBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#0a1826" stop-opacity="0.95"/>
+                <stop offset="18%" stop-color="#1b3854" stop-opacity="0.6"/>
+                <stop offset="45%" stop-color="#2c5b88" stop-opacity="0.2"/>
+                <stop offset="55%" stop-color="#1e4162" stop-opacity="0.25"/>
+                <stop offset="82%" stop-color="#142a40" stop-opacity="0.65"/>
+                <stop offset="100%" stop-color="#07101a" stop-opacity="0.98"/>
+              </linearGradient>
+
+              <linearGradient id="glassHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+                <stop offset="20%" stop-color="#ffffff" stop-opacity="0.5"/>
+                <stop offset="35%" stop-color="#ffffff" stop-opacity="0.85"/>
+                <stop offset="50%" stop-color="#ffffff" stop-opacity="0.1"/>
+                <stop offset="85%" stop-color="#ffffff" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+              </linearGradient>
+
+              <linearGradient id="goldMetallic" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#735413"/>
+                <stop offset="25%" stop-color="#C9A84C"/>
+                <stop offset="50%" stop-color="#FFF3C4"/>
+                <stop offset="75%" stop-color="#C9A84C"/>
+                <stop offset="100%" stop-color="#4D3505"/>
+              </linearGradient>
+
+              <linearGradient id="labelBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0a192c"/>
+                <stop offset="50%" stop-color="#153356"/>
+                <stop offset="100%" stop-color="#081220"/>
+              </linearGradient>
+
+              <filter id="glowBlue" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="8" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+
+            <ellipse cx="120" cy="492" rx="70" ry="12" fill="#000000" opacity="0.8"/>
+            <ellipse cx="120" cy="492" rx="50" ry="8" fill="#2E6DA4" opacity="0.25" filter="url(#glowBlue)"/>
+
+            <path d="M 88,140 Q 120,150 152,140 Q 185,210 195,330 Q 200,430 185,465 Q 120,480 55,465 Q 40,430 45,330 Q 55,210 88,140 Z" fill="url(#liquidBlue)"/>
+            <path d="M 65,380 Q 120,410 175,380 Q 188,435 170,460 Q 120,474 70,460 Q 52,435 65,380 Z" fill="#FFAE34" opacity="0.35"/>
+
+            <path d="M 104,40 L 136,40 L 138,100 Q 148,125 160,145 Q 202,215 208,330 Q 214,435 192,475 Q 120,490 48,475 Q 26,435 32,330 Q 38,215 80,145 Q 92,125 102,100 Z" fill="url(#glassBodyBlue)"/>
+
+            <path d="M 48,475 Q 120,490 192,475 Q 182,450 120,454 Q 58,450 48,475 Z" fill="#03080f" opacity="0.85"/>
+            <path d="M 55,470 Q 120,483 185,470 Q 175,458 120,460 Q 65,458 55,470 Z" fill="#2c5b88" opacity="0.3"/>
+
+            <circle cx="120" cy="120" r="14" fill="url(#goldMetallic)" stroke="#3a2703" stroke-width="1"/>
+            <circle cx="120" cy="120" r="11" fill="#0d1e30" stroke="url(#goldMetallic)" stroke-width="0.8"/>
+            <text x="120" y="124" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="10" font-weight="bold" fill="url(#goldMetallic)">NC</text>
+
+            <rect x="100" y="32" width="40" height="22" rx="2" fill="url(#goldMetallic)"/>
+            <rect x="98" y="26" width="44" height="8" rx="2" fill="url(#goldMetallic)"/>
+            <line x1="102" y1="38" x2="138" y2="38" stroke="#523906" stroke-width="0.8"/>
+            <line x1="102" y1="44" x2="138" y2="44" stroke="#523906" stroke-width="0.8"/>
+            <rect x="100" y="50" width="40" height="4" fill="#120c02" opacity="0.6"/>
+
+            <g transform="translate(60, 200)">
+              <rect x="0" y="0" width="120" height="150" rx="6" fill="url(#labelBlueGrad)" stroke="url(#goldMetallic)" stroke-width="1.5"/>
+              <rect x="4" y="4" width="112" height="142" rx="4" fill="none" stroke="url(#goldMetallic)" stroke-width="0.5" stroke-dasharray="4,2" opacity="0.8"/>
+              
+              <path d="M 12,18 L 108,18 M 12,132 L 108,132" stroke="url(#goldMetallic)" stroke-width="0.8"/>
+              
+              <text x="60" y="32" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="6" letter-spacing="2" fill="#E8C97A">MAISON FONDÉE EN 1894</text>
+              <text x="60" y="48" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="13" font-weight="600" fill="#ffffff" letter-spacing="1">NOBLE COGNAC</text>
+              
+              <line x1="35" y1="56" x2="85" y2="56" stroke="url(#goldMetallic)" stroke-width="0.6"/>
+              
+              <text x="60" y="86" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="34" font-weight="300" fill="url(#goldMetallic)">24</text>
+              <text x="60" y="98" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="6.5" font-weight="600" letter-spacing="3" fill="#4A90C4">AÑOS</text>
+              
+              <line x1="40" y1="106" x2="80" y2="106" stroke="url(#goldMetallic)" stroke-width="0.6"/>
+              
+              <text x="60" y="118" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="9" font-style="italic" fill="#E8E0D0">Gran Reserva Especial</text>
+              <text x="60" y="126" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="5" letter-spacing="1.5" fill="#9A8E7A">COGNAC XO EXTRA</text>
+            </g>
+
+            <path d="M 104,42 L 107,100 Q 80,160 48,270 Q 36,340 46,455 Q 38,410 42,320 Q 55,200 96,125 Z" fill="url(#glassHighlight)" opacity="0.85"/>
+            <path d="M 134,42 L 132,100 Q 155,160 188,270 Q 198,340 190,455 Q 196,410 192,320 Q 175,200 138,125 Z" fill="url(#glassHighlight)" opacity="0.4"/>
+
+            <ellipse cx="78" cy="165" rx="6" ry="25" transform="rotate(-25 78 165)" fill="#ffffff" opacity="0.4" filter="url(#glowBlue)"/>
+            <ellipse cx="165" cy="240" rx="3" ry="40" transform="rotate(12 165 240)" fill="#ffffff" opacity="0.25"/>
+          </svg>
+        </div>
+
+        <div style="position:absolute;top:15%;left:10%;width:2px;height:2px;background:#4A90C4;border-radius:50%;box-shadow:0 0 10px 3px #4A90C4;opacity:0.7;"></div>
+        <div style="position:absolute;top:72%;right:12%;width:2px;height:2px;background:#E8C97A;border-radius:50%;box-shadow:0 0 8px 2px #E8C97A;opacity:0.6;"></div>
+      </div>
+
+      <div class="info-panel blue-bg">
+        <div class="badge blue anim">Gran Reserva · Edición Limitada</div>
+        <div class="age-number blue anim">24</div>
+        <div class="age-label anim">Años de Añejamiento</div>
+        <div class="product-name anim">Noble Cognac<br><em>Gran Reserva</em></div>
+        <div class="product-sub anim">Etiqueta Azul · 700 ml</div>
+        <div class="divider blue anim"></div>
+        <div class="notes-title anim">Notas de Cata</div>
+        <ul class="notes-list blue anim">
+          <li>Ciruela negra, tabaco y cedro envejecido</li>
+          <li>Caramelo oscuro, cuero fino y especias orientales</li>
+          <li>Retrogusto eterno con toque de vainilla ahumada</li>
+          <li>Añejado en barricas de roble francés seleccionado</li>
+        </ul>
+        <div class="price-tag anim">Edición Numerada <small>Consultar disponibilidad</small></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SLIDE 2 — RESERVA ROJA · 12 AÑOS -->
+  <div class="slide" id="s2">
+    <div class="slide-inner">
+
+      <div class="bottle-panel red-panel">
+        <div class="bottle-wrap">
+          <svg viewBox="0 0 240 520" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="liquidRed" cx="50%" cy="65%" r="60%">
+                <stop offset="0%" stop-color="#F39C12"/>
+                <stop offset="35%" stop-color="#C0392B"/>
+                <stop offset="70%" stop-color="#7B1113"/>
+                <stop offset="100%" stop-color="#340304"/>
+              </radialGradient>
+              
+              <linearGradient id="glassBodyRed" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#240707" stop-opacity="0.95"/>
+                <stop offset="18%" stop-color="#4a1212" stop-opacity="0.6"/>
+                <stop offset="45%" stop-color="#7a2020" stop-opacity="0.2"/>
+                <stop offset="55%" stop-color="#541616" stop-opacity="0.25"/>
+                <stop offset="82%" stop-color="#380b0b" stop-opacity="0.65"/>
+                <stop offset="100%" stop-color="#190303" stop-opacity="0.98"/>
+              </linearGradient>
+
+              <linearGradient id="labelRedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2b0808"/>
+                <stop offset="50%" stop-color="#5c1515"/>
+                <stop offset="100%" stop-color="#1f0404"/>
+              </linearGradient>
+
+              <filter id="glowRed" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="8" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+
+            <ellipse cx="120" cy="492" rx="70" ry="12" fill="#000000" opacity="0.85"/>
+            <ellipse cx="120" cy="492" rx="50" ry="8" fill="#C0392B" opacity="0.25" filter="url(#glowRed)"/>
+
+            <path d="M 88,140 Q 120,150 152,140 Q 185,210 195,330 Q 200,430 185,465 Q 120,480 55,465 Q 40,430 45,330 Q 55,210 88,140 Z" fill="url(#liquidRed)"/>
+            <path d="M 65,380 Q 120,410 175,380 Q 188,435 170,460 Q 120,474 70,460 Q 52,435 65,380 Z" fill="#FF7E34" opacity="0.38"/>
+
+            <path d="M 104,40 L 136,40 L 138,100 Q 148,125 160,145 Q 202,215 208,330 Q 214,435 192,475 Q 120,490 48,475 Q 26,435 32,330 Q 38,215 80,145 Q 92,125 102,100 Z" fill="url(#glassBodyRed)"/>
+
+            <path d="M 48,475 Q 120,490 192,475 Q 182,450 120,454 Q 58,450 48,475 Z" fill="#120202" opacity="0.85"/>
+            <path d="M 55,470 Q 120,483 185,470 Q 175,458 120,460 Q 65,458 55,470 Z" fill="#7a2020" opacity="0.3"/>
+
+            <circle cx="120" cy="120" r="14" fill="url(#goldMetallic)" stroke="#3a2703" stroke-width="1"/>
+            <circle cx="120" cy="120" r="11" fill="#200d0d" stroke="url(#goldMetallic)" stroke-width="0.8"/>
+            <text x="120" y="124" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="10" font-weight="bold" fill="url(#goldMetallic)">NC</text>
+
+            <rect x="100" y="32" width="40" height="22" rx="2" fill="url(#goldMetallic)"/>
+            <rect x="98" y="26" width="44" height="8" rx="2" fill="url(#goldMetallic)"/>
+            <line x1="102" y1="38" x2="138" y2="38" stroke="#523906" stroke-width="0.8"/>
+            <line x1="102" y1="44" x2="138" y2="44" stroke="#523906" stroke-width="0.8"/>
+            <rect x="100" y="50" width="40" height="4" fill="#120c02" opacity="0.6"/>
+
+            <g transform="translate(60, 200)">
+              <rect x="0" y="0" width="120" height="150" rx="6" fill="url(#labelRedGrad)" stroke="url(#goldMetallic)" stroke-width="1.5"/>
+              <rect x="4" y="4" width="112" height="142" rx="4" fill="none" stroke="url(#goldMetallic)" stroke-width="0.5" stroke-dasharray="4,2" opacity="0.8"/>
+              
+              <path d="M 12,18 L 108,18 M 12,132 L 108,132" stroke="url(#goldMetallic)" stroke-width="0.8"/>
+              
+              <text x="60" y="32" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="6" letter-spacing="2" fill="#E8C97A">MAISON FONDÉE EN 1894</text>
+              <text x="60" y="48" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="13" font-weight="600" fill="#ffffff" letter-spacing="1">NOBLE COGNAC</text>
+              
+              <line x1="35" y1="56" x2="85" y2="56" stroke="url(#goldMetallic)" stroke-width="0.6"/>
+              
+              <text x="60" y="86" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="34" font-weight="300" fill="url(#goldMetallic)">12</text>
+              <text x="60" y="98" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="6.5" font-weight="600" letter-spacing="3" fill="#C0392B">AÑOS</text>
+              
+              <line x1="40" y1="106" x2="80" y2="106" stroke="url(#goldMetallic)" stroke-width="0.6"/>
+              
+              <text x="60" y="118" text-anchor="middle" font-family="'Cormorant Garamond', serif" font-size="9" font-style="italic" fill="#E8E0D0">Reserva Clásica</text>
+              <text x="60" y="126" text-anchor="middle" font-family="'Montserrat', sans-serif" font-size="5" letter-spacing="1.5" fill="#9A8E7A">COGNAC VSOP</text>
+            </g>
+
+            <path d="M 104,42 L 107,100 Q 80,160 48,270 Q 36,340 46,455 Q 38,410 42,320 Q 55,200 96,125 Z" fill="url(#glassHighlight)" opacity="0.85"/>
+            <path d="M 134,42 L 132,100 Q 155,160 188,270 Q 198,340 190,455 Q 196,410 192,320 Q 175,200 138,125 Z" fill="url(#glassHighlight)" opacity="0.4"/>
+
+            <ellipse cx="78" cy="165" rx="6" ry="25" transform="rotate(-25 78 165)" fill="#ffffff" opacity="0.4" filter="url(#glowRed)"/>
+            <ellipse cx="165" cy="240" rx="3" ry="40" transform="rotate(12 165 240)" fill="#ffffff" opacity="0.25"/>
+          </svg>
+        </div>
+
+        <div style="position:absolute;top:20%;right:10%;width:2px;height:2px;background:#C0392B;border-radius:50%;box-shadow:0 0 10px 3px #C0392B;opacity:0.7;"></div>
+        <div style="position:absolute;bottom:25%;left:12%;width:2px;height:2px;background:#E8C97A;border-radius:50%;box-shadow:0 0 8px 2px #E8C97A;opacity:0.6;"></div>
+      </div>
+
+      <div class="info-panel red-bg">
+        <div class="badge red anim">Reserva Clásica · Edición Limitada</div>
+        <div class="age-number red anim">12</div>
+        <div class="age-label anim">Años de Añejamiento</div>
+        <div class="product-name anim">Noble Cognac<br><em>Reserva Clásica</em></div>
+        <div class="product-sub anim">Etiqueta Roja · 700 ml</div>
+        <div class="divider red anim"></div>
+        <div class="notes-title anim">Notas de Cata</div>
+        <ul class="notes-list red anim">
+          <li>Frutos rojos, naranja confitada y canela</li>
+          <li>Caramelo dorado, vainilla y madera fresca</li>
+          <li>Retrogusto cálido, elegante y prolongado</li>
+          <li>Añejado en barricas de roble americano</li>
+        </ul>
+        <div class="price-tag anim">Edición Numerada <small>Consultar disponibilidad</small></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- BADGE -->
+<div class="slide-badge" id="badge">01 / 02</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn" id="prev">&#8592;</button>
+  <div class="nav-dots" id="dots"></div>
+  <span class="slide-counter" id="counter">1 / 2</span>
+  <button class="nav-btn" id="next">&#8594;</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsContainer = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const badge = document.getElementById('badge');
+  let current = 0;
+  const total = slides.length;
+
+  slides.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' active':'');
+    d.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsContainer.children[current].classList.remove('active');
+    current = (n + total) % total;
+    slides[current].classList.add('active');
+    dotsContainer.children[current].classList.add('active');
+    counter.textContent = (current+1) + ' / ' + total;
+    badge.textContent = String(current+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+  }
+
+  document.getElementById('prev').addEventListener('click', () => goTo(current-1));
+  document.getElementById('next').addEventListener('click', () => goTo(current+1));
+  document.addEventListener('keydown', e => {
+    if (e.key==='ArrowRight'||e.key==='ArrowDown') goTo(current+1);
+    if (e.key==='ArrowLeft'||e.key==='ArrowUp') goTo(current-1);
+  });
+
+  let touchX = 0;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) dx < 0 ? goTo(current+1) : goTo(current-1);
+  });
+</script>
+</body>
+</html>

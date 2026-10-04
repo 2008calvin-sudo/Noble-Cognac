@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Noble Cognac — Colección de Añejados</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C9A84C; --gold-light: #E8C97A; --gold-dark: #8B6914;
+    --black: #0A0A0A; --dark2: #1A1A1A;
+    --text: #E8E0D0; --text-muted: #9A8E7A;
+    --blue: #1B3A5C; --blue-light: #4A90C4; --blue-mid: #2E6DA4;
+    --red: #6B1A1A; --red-light: #C0392B; --red-mid: #922B21;
+  }
+  html, body { width:100%; height:100%; background:var(--black); color:var(--text); font-family:'Montserrat',sans-serif; overflow:hidden; }
+  .deck { width:100vw; height:100vh; position:relative; }
+  .slide { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0; pointer-events:none; transition:opacity 0.8s ease; overflow:hidden; }
+  .slide.active { opacity:1; pointer-events:all; }
+  .gold-line { width:80px; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:14px auto; }
+
+  /* ─── SLIDE LAYOUT ─── */
+  .slide-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%; height: 100%;
+  }
+
+  /* ─── BOTTLE PANEL ─── */
+  .bottle-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bottle-panel::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0.07;
+  }
+  .bottle-panel.blue-panel {
+    background: radial-gradient(ellipse at center, #0d1e30 0%, #050a0f 100%);
+  }
+  .bottle-panel.blue-panel::before {
+    background: radial-gradient(circle at 50% 40%, #2E6DA4 0%, transparent 70%);
+    opacity: 0.15;
+  }
+  .bottle-panel.red-panel {
+    background: radial-gradient(ellipse at center, #200d0d 0%, #0a0505 100%);
+  }
+  .bottle-panel.red-panel::before {
+    background: radial-gradient(circle at 50% 40%, #922B21 0%, transparent 70%);
+    opacity: 0.2;
+  }
+
+  /* ─── SVG BOTTLE ─── */
+  .bottle-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,0.6));
+  }
+  .bottle-wrap svg { width: 160px; height: auto; }
+
+  /* ─── PANEL INFO ─── */
+  .info-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 50px 60px 50px 50px;
+  }
+  .info-panel.blue-bg { background: linear-gradient(135deg, #080e15 0%, #0a0a0a 100%); }
+  .info-panel.red-bg  { background: linear-gradient(135deg, #120505 0%, #0a0a0a 100%); }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border: 1px solid;
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+  .badge.blue { border-color: var(--blue-light); color: var(--blue-light); }
+  .badge.red  { border-color: var(--red-light);  color: var(--red-light); }
+
+  .age-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(5rem, 10vw, 8rem);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .age-number.blue { color: var(--blue-light); }
+  .age-number.red  { color: var(--red-light); }
+
+  .age-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 4px;
+    margin-bottom: 20px;
+  }
+
+  .product-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 2.5vw, 2.4rem);
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .product-name em { font-style: italic; }
+
+  .product-sub {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .divider {
+    width: 40px; height: 1px;
+    margin: 16px 0;
+  }
+  .divider.blue { background: var(--blue-light); }
+  .divider.red  { background: var(--red-light); }
+
+  .notes-title {
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .notes-list {
+    list-style: none;
+    margin-bottom: 24px;
+  }
+  .notes-list li {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .notes-list li::before {
+    content: '';
+    display: block;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .notes-list.blue li::before { background: var(--blue-light); }
+  .notes-list.red  li::before { background: var(--red-light); }
+
+  .price-tag {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--gold-light);
+  }
+  .price-tag small {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  /* ─── NAV ─── */
+  .nav { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:16px; z-index:100; background:rgba(10,10,10,0.9); padding:10px 20px; border:1px solid rgba(201,168,76,0.2); backdrop-filter:blur(10px); }
+  .nav-btn { background:none; border:1px solid rgba(201,168,76,0.3); color:var(--gold); width:32px; height:32px; cursor:pointer; font-size:0.9rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .nav-btn:hover { background:rgba(201,168,76,0.1); border-color:var(--gold); }
+  .nav-dots { display:flex; gap:8px; }
+  .dot { width:6px; height:6px; border-radius:50%; background:rgba(201,168,76,0.2); cursor:pointer; transition:all 0.3s; }
+  .dot.active { background:var(--gold); width:20px; border-radius:3px; }
+  .slide-counter { font-size:0.6rem; letter-spacing:0.2em; color:var(--text-muted); min-width:40px; text-align:center; }
+  .slide-badge { position:fixed; top:24px; right:32px; font-size:0.55rem; letter-spacing:0.3em; color:rgba(201,168,76,0.4); z-index:100; }
+
+  /* ─── ANIMATIONS ─── */
+  .slide.active .anim { animation: fadeUp 0.7s ease forwards; }
+  .slide.active .anim:nth-child(2) { animation-delay:0.15s; }
+  .slide.active .anim:nth-child(3) { animation-delay:0.3s; }
+  .slide.active .anim:nth-child(4) { animation-delay:0.45s; }
+  .slide.active .anim:nth-child(5) { animation-delay:0.6s; }
+  .slide.active .anim:nth-child(6) { animation-delay:0.75s; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+  .anim { opacity:0; }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ══════════════════════════════════════
+       SLIDE 1 — RESERVA AZUL · 24 AÑOS
+  ══════════════════════════════════════ -->
+  <div class="slide active" id="s1">
+    <div class="slide-inner">
+
+      <!-- BOTELLA AZUL -->
+      <div class="bottle-panel blue-panel">
+        <div class="bottle-wrap">
+          <svg viewBox="0 0 160 420" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sombra base -->
+            <ellipse cx="80" cy="410" rx="35" ry="6" fill="rgba(0,0,0,0.5)"/>
+            <!-- Cuerpo botella -->
+            <defs>
+              <linearGradient id="bgBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#0a1520"/>
+                <stop offset="30%" style="stop-color:#0d1e30"/>
+                <stop offset="60%" style="stop-color:#142840"/>
+                <stop offset="80%" style="stop-color:#0d1e30"/>
+                <stop offset="100%" style="stop-color:#070e18"/>
+              </linearGradient>
+              <linearGradient id="shineBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:rgba(255,255,255,0)"/>
+                <stop offset="25%" style="stop-color:rgba(74,144,196,0.15)"/>
+                <stop offset="40%" style="stop-color:rgba(255,255,255,0.08)"/>
+                <stop offset="100%" style="stop-color:rgba(0,0,0,0)"/>
+              </linearGradient>
+              <linearGradient id="labelBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#1B3A5C"/>
+                <stop offset="50%" style="stop-color:#2E6DA4"/>
+                <stop offset="100%" style="stop-color:#1B3A5C"/>
+              </linearGradient>
+              <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#8B6914"/>
+                <stop offset="50%" style="stop-color:#E8C97A"/>
+                <stop offset="100%" style="stop-color:#8B6914"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Cuello -->
+            <path d="M65,30 Q63,20 64,10 L96,10 Q97,20 95,30 Q93,50 90,70 L70,70 Q67,50 65,30Z" fill="url(#bgBlue)"/>
+            <!-- Hombros -->
+            <path d="M70,70 Q50,90 45,120 L115,120 Q110,90 90,70Z" fill="url(#bgBlue)"/>
+            <!-- Cuerpo principal -->
+            <rect x="45" y="120" width="70" height="270" rx="6" fill="url(#bgBlue)"/>
+            <!-- Brillo lateral -->
+            <rect x="45" y="120" width="70" height="270" rx="6" fill="url(#shineBlue)"/>
+
+            <!-- Borde dorado superior inferior -->
+            <rect x="45" y="118" width="70" height="3" rx="1" fill="url(#goldGrad)" opacity="0.7"/>
+            <rect x="45" y="387" width="70" height="3" rx="1" fill="url(#goldGrad)" opacity="0.7"/>
+
+            <!-- ETIQUETA AZUL -->
+            <rect x="50" y="160" width="60" height="140" rx="3" fill="url(#labelBlue)" opacity="0.95"/>
+            <!-- Marco dorado etiqueta -->
+            <rect x="52" y="162" width="56" height="136" rx="2" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.8"/>
+            <rect x="55" y="165" width="50" height="130" rx="1" fill="none" stroke="#C9A84C" stroke-width="0.3" opacity="0.4"/>
+
+            <!-- Texto etiqueta: NC -->
+            <text x="80" y="198" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-weight="bold" fill="#E8C97A" letter-spacing="2">NC</text>
+            <!-- Línea decorativa -->
+            <line x1="60" y1="203" x2="100" y2="203" stroke="#C9A84C" stroke-width="0.5" opacity="0.6"/>
+            <!-- Noble Cognac -->
+            <text x="80" y="218" text-anchor="middle" font-family="Georgia,serif" font-size="6.5" fill="#E8C97A" letter-spacing="1.5">NOBLE COGNAC</text>
+            <!-- Línea -->
+            <line x1="62" y1="222" x2="98" y2="222" stroke="#4A90C4" stroke-width="0.4" opacity="0.7"/>
+
+            <!-- 24 AÑOS grande -->
+            <text x="80" y="255" text-anchor="middle" font-family="Georgia,serif" font-size="32" font-weight="300" fill="#E8E0D0" letter-spacing="-1">24</text>
+            <text x="80" y="267" text-anchor="middle" font-family="Georgia,serif" font-size="7" fill="#4A90C4" letter-spacing="2">AÑOS</text>
+
+            <!-- Línea -->
+            <line x1="60" y1="272" x2="100" y2="272" stroke="#C9A84C" stroke-width="0.4" opacity="0.5"/>
+
+            <!-- Reserva -->
+            <text x="80" y="282" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="#9A8E7A" letter-spacing="1.5" font-style="italic">Gran Reserva</text>
+            <!-- Venezuela -->
+            <text x="80" y="292" text-anchor="middle" font-family="Georgia,serif" font-size="5" fill="#4A90C4" letter-spacing="2">VENEZUELA</text>
+
+            <!-- Línea inferior etiqueta -->
+            <line x1="60" y1="278" x2="100" y2="278" stroke="#C9A84C" stroke-width="0.3" opacity="0.4"/>
+
+            <!-- Corcho/capsula -->
+            <rect x="62" y="2" width="36" height="12" rx="3" fill="url(#goldGrad)"/>
+            <rect x="67" y="10" width="26" height="4" fill="#8B6914" opacity="0.5"/>
+
+            <!-- Brillo tenue cuerpo -->
+            <ellipse cx="62" cy="200" rx="4" ry="60" fill="rgba(255,255,255,0.03)"/>
+
+            <!-- Líquido ámbar visible (zona baja) -->
+            <rect x="47" y="340" width="66" height="48" rx="4" fill="rgba(139,105,20,0.25)"/>
+          </svg>
+        </div>
+
+        <!-- Destellos decorativos -->
+        <div style="position:absolute;top:15%;left:10%;width:2px;height:2px;background:#4A90C4;border-radius:50%;box-shadow:0 0 8px 2px #4A90C4;opacity:0.6;"></div>
+        <div style="position:absolute;top:70%;right:12%;width:1px;height:1px;background:#E8C97A;border-radius:50%;box-shadow:0 0 6px 2px #E8C97A;opacity:0.5;"></div>
+      </div>
+
+      <!-- INFO AZUL -->
+      <div class="info-panel blue-bg">
+        <div class="badge blue anim">Gran Reserva · Edición Limitada</div>
+        <div class="age-number blue anim">24</div>
+        <div class="age-label anim">Años de Añejamiento</div>
+        <div class="product-name anim">Noble Cognac<br><em>Gran Reserva</em></div>
+        <div class="product-sub anim">Etiqueta Azul · 700 ml</div>
+        <div class="divider blue anim"></div>
+        <div class="notes-title anim">Notas de Cata</div>
+        <ul class="notes-list blue anim">
+          <li>Ciruela negra, tabaco y cedro envejecido</li>
+          <li>Caramelo oscuro, cuero fino y especias orientales</li>
+          <li>Retrogusto eterno con toque de vainilla ahumada</li>
+          <li>Añejado en barricas de roble francés seleccionado</li>
+        </ul>
+        <div class="price-tag anim">Edición Numerada <small>Consultar disponibilidad</small></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SLIDE 2 — RESERVA ROJA · 12 AÑOS
+  ══════════════════════════════════════ -->
+  <div class="slide" id="s2">
+    <div class="slide-inner">
+
+      <!-- BOTELLA ROJA -->
+      <div class="bottle-panel red-panel">
+        <div class="bottle-wrap">
+          <svg viewBox="0 0 160 420" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="80" cy="410" rx="35" ry="6" fill="rgba(0,0,0,0.5)"/>
+            <defs>
+              <linearGradient id="bgRed" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#150808"/>
+                <stop offset="30%" style="stop-color:#200d0d"/>
+                <stop offset="60%" style="stop-color:#2a1010"/>
+                <stop offset="80%" style="stop-color:#200d0d"/>
+                <stop offset="100%" style="stop-color:#0f0606"/>
+              </linearGradient>
+              <linearGradient id="shineRed" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:rgba(255,255,255,0)"/>
+                <stop offset="25%" style="stop-color:rgba(192,57,43,0.12)"/>
+                <stop offset="40%" style="stop-color:rgba(255,255,255,0.06)"/>
+                <stop offset="100%" style="stop-color:rgba(0,0,0,0)"/>
+              </linearGradient>
+              <linearGradient id="labelRed" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#6B1A1A"/>
+                <stop offset="50%" style="stop-color:#C0392B"/>
+                <stop offset="100%" style="stop-color:#6B1A1A"/>
+              </linearGradient>
+              <linearGradient id="goldGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#8B6914"/>
+                <stop offset="50%" style="stop-color:#E8C97A"/>
+                <stop offset="100%" style="stop-color:#8B6914"/>
+              </linearGradient>
+            </defs>
+
+            <path d="M65,30 Q63,20 64,10 L96,10 Q97,20 95,30 Q93,50 90,70 L70,70 Q67,50 65,30Z" fill="url(#bgRed)"/>
+            <path d="M70,70 Q50,90 45,120 L115,120 Q110,90 90,70Z" fill="url(#bgRed)"/>
+            <rect x="45" y="120" width="70" height="270" rx="6" fill="url(#bgRed)"/>
+            <rect x="45" y="120" width="70" height="270" rx="6" fill="url(#shineRed)"/>
+
+            <rect x="45" y="118" width="70" height="3" rx="1" fill="url(#goldGrad2)" opacity="0.7"/>
+            <rect x="45" y="387" width="70" height="3" rx="1" fill="url(#goldGrad2)" opacity="0.7"/>
+
+            <!-- ETIQUETA ROJA -->
+            <rect x="50" y="160" width="60" height="140" rx="3" fill="url(#labelRed)" opacity="0.95"/>
+            <rect x="52" y="162" width="56" height="136" rx="2" fill="none" stroke="#C9A84C" stroke-width="0.8" opacity="0.8"/>
+            <rect x="55" y="165" width="50" height="130" rx="1" fill="none" stroke="#C9A84C" stroke-width="0.3" opacity="0.4"/>
+
+            <text x="80" y="198" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-weight="bold" fill="#E8C97A" letter-spacing="2">NC</text>
+            <line x1="60" y1="203" x2="100" y2="203" stroke="#C9A84C" stroke-width="0.5" opacity="0.6"/>
+            <text x="80" y="218" text-anchor="middle" font-family="Georgia,serif" font-size="6.5" fill="#E8C97A" letter-spacing="1.5">NOBLE COGNAC</text>
+            <line x1="62" y1="222" x2="98" y2="222" stroke="#C0392B" stroke-width="0.4" opacity="0.7"/>
+
+            <text x="80" y="255" text-anchor="middle" font-family="Georgia,serif" font-size="32" font-weight="300" fill="#E8E0D0" letter-spacing="-1">12</text>
+            <text x="80" y="267" text-anchor="middle" font-family="Georgia,serif" font-size="7" fill="#C0392B" letter-spacing="2">AÑOS</text>
+
+            <line x1="60" y1="272" x2="100" y2="272" stroke="#C9A84C" stroke-width="0.4" opacity="0.5"/>
+            <text x="80" y="282" text-anchor="middle" font-family="Georgia,serif" font-size="6" fill="#9A8E7A" letter-spacing="1.5" font-style="italic">Reserva Clásica</text>
+            <text x="80" y="292" text-anchor="middle" font-family="Georgia,serif" font-size="5" fill="#C0392B" letter-spacing="2">VENEZUELA</text>
+
+            <rect x="62" y="2" width="36" height="12" rx="3" fill="url(#goldGrad2)"/>
+            <rect x="67" y="10" width="26" height="4" fill="#8B6914" opacity="0.5"/>
+            <ellipse cx="62" cy="200" rx="4" ry="60" fill="rgba(255,255,255,0.02)"/>
+            <rect x="47" y="340" width="66" height="48" rx="4" fill="rgba(139,60,20,0.25)"/>
+          </svg>
+        </div>
+
+        <div style="position:absolute;top:20%;right:10%;width:2px;height:2px;background:#C0392B;border-radius:50%;box-shadow:0 0 8px 2px #C0392B;opacity:0.6;"></div>
+        <div style="position:absolute;bottom:25%;left:12%;width:1px;height:1px;background:#E8C97A;border-radius:50%;box-shadow:0 0 6px 2px #E8C97A;opacity:0.5;"></div>
+      </div>
+
+      <!-- INFO ROJA -->
+      <div class="info-panel red-bg">
+        <div class="badge red anim">Reserva Clásica · Edición Limitada</div>
+        <div class="age-number red anim">12</div>
+        <div class="age-label anim">Años de Añejamiento</div>
+        <div class="product-name anim">Noble Cognac<br><em>Reserva Clásica</em></div>
+        <div class="product-sub anim">Etiqueta Roja · 700 ml</div>
+        <div class="divider red anim"></div>
+        <div class="notes-title anim">Notas de Cata</div>
+        <ul class="notes-list red anim">
+          <li>Frutos rojos, naranja confitada y canela</li>
+          <li>Caramelo dorado, vainilla y madera fresca</li>
+          <li>Retrogusto cálido, elegante y prolongado</li>
+          <li>Añejado en barricas de roble americano</li>
+        </ul>
+        <div class="price-tag anim">Edición Numerada <small>Consultar disponibilidad</small></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- BADGE -->
+<div class="slide-badge" id="badge">01 / 02</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn" id="prev">&#8592;</button>
+  <div class="nav-dots" id="dots"></div>
+  <span class="slide-counter" id="counter">1 / 2</span>
+  <button class="nav-btn" id="next">&#8594;</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsContainer = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const badge = document.getElementById('badge');
+  let current = 0;
+  const total = slides.length;
+
+  slides.forEach((_,i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' active':'');
+    d.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsContainer.children[current].classList.remove('active');
+    current = (n + total) % total;
+    slides[current].classList.add('active');
+    dotsContainer.children[current].classList.add('active');
+    counter.textContent = (current+1) + ' / ' + total;
+    badge.textContent = String(current+1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+  }
+
+  document.getElementById('prev').addEventListener('click', () => goTo(current-1));
+  document.getElementById('next').addEventListener('click', () => goTo(current+1));
+  document.addEventListener('keydown', e => {
+    if (e.key==='ArrowRight'||e.key==='ArrowDown') goTo(current+1);
+    if (e.key==='ArrowLeft'||e.key==='ArrowUp') goTo(current-1);
+  });
+
+  let touchX = 0;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) dx < 0 ? goTo(current+1) : goTo(current-1);
+  });
+</script>
+</body>
+</html>
